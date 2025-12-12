@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 图片生成</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">AI 图片生成</div>
+            <div class="nav-links">
+                <a href="analyze.html">设计稿解析</a>
+                <a href="index.html" class="active">图片生成</a>
+                <a href="history.html">历史记录</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="container">
+        <div class="generator-layout">
+            <!-- 左侧：配置区 -->
+            <div class="config-panel">
+                <h2>配置参数</h2>
+
+                <form id="generateForm">
+                    <div class="form-group">
+                        <label>主标题 *</label>
+                        <input type="text" id="title" required placeholder="输入主标题">
+                    </div>
+
+                    <div class="form-group">
+                        <label>副标题</label>
+                        <input type="text" id="subtitle" placeholder="输入副标题（可选）">
+                    </div>
+
+                    <div class="form-group">
+                        <label>关键词 * (用逗号分隔，最多5个)</label>
+                        <input type="text" id="keywords" required placeholder="例如：AI,设计,创意">
+                        <small id="keywordCount">已输入 0 个关键词</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>风格模板 *</label>
+                        <div class="button-group" id="styleGroup">
+                            <button type="button" class="button-option active" data-value="xiaohongshu">
+                                📱 小红书封面
+                                <small>1080x1350</small>
+                            </button>
+                            <button type="button" class="button-option" data-value="advertising_a">
+                                🎯 广告素材
+                                <small>1080x1080</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>AI 模型 *</label>
+                        <div class="button-group" id="modelGroup">
+                            <button type="button" class="button-option active" data-value="google/gemini-2.5-flash-image">
+                                ⚡ Gemini 2.5 Flash
+                                <small>推荐 · 速度快</small>
+                            </button>
+                            <button type="button" class="button-option" data-value="google/gemini-3-pro-image-preview">
+                                💎 Gemini 3 Pro
+                                <small>高质量 · 更精细</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>生成数量</label>
+                        <div class="button-group button-group-small" id="countGroup">
+                            <button type="button" class="button-option active" data-value="1">1 张</button>
+                            <button type="button" class="button-option" data-value="2">2 张</button>
+                            <button type="button" class="button-option" data-value="3">3 张</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="generateBtn">
+                        <span>🎨 生成图片</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- 右侧：结果区 -->
+            <div class="result-panel">
+                <h2>生成结果</h2>
+
+                <!-- 初始状态 -->
+                <div id="emptyState" class="empty-state">
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p>填写左侧参数开始生成</p>
+                </div>
+
+                <!-- 加载中 -->
+                <div id="loadingState" class="loading-state" style="display: none;">
+                    <div class="loader"></div>
+                    <p>AI 正在生成图片...</p>
+                </div>
+
+                <!-- 结果展示 -->
+                <div id="resultContent" style="display: none;">
+                    <div class="result-meta">
+                        <span id="resultCount"></span>
+                        <span id="resultTime"></span>
+                    </div>
+                    <div id="imageGrid" class="image-grid"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

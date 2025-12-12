@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史记录 - AI 图片生成</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">AI 图片生成</div>
+            <div class="nav-links">
+                <a href="analyze.html">设计稿解析</a>
+                <a href="index.html">图片生成</a>
+                <a href="history.html" class="active">历史记录</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="container">
+        <div class="history-header">
+            <h1>历史记录</h1>
+            <div class="filter-bar">
+                <select id="styleFilter">
+                    <option value="">全部风格</option>
+                    <option value="xiaohongshu">小红书封面</option>
+                    <option value="advertising_a">广告素材</option>
+                </select>
+                <span class="record-count">共 <strong id="totalCount">0</strong> 条</span>
+            </div>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="loader"></div>
+            <p>加载中...</p>
+        </div>
+
+        <!-- 历史记录列表 -->
+        <div id="historyList" class="history-list"></div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p>暂无历史记录</p>
+            <a href="index.html" class="btn btn-primary">立即生成</a>
+        </div>
+
+        <!-- 分页 -->
+        <div id="pagination" class="pagination" style="display: none;">
+            <button id="prevBtn" class="btn btn-secondary">上一页</button>
+            <span id="pageInfo"></span>
+            <button id="nextBtn" class="btn btn-secondary">下一页</button>
+        </div>
+    </main>
+
+    <!-- 详情弹窗 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>详情</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="history.js"></script>
+</body>
+</html>

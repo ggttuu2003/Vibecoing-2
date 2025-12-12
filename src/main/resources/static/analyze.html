@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设计稿解析 - AI 工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">AI 工具集</div>
+            <div class="nav-links">
+                <a href="analyze.html" class="active">设计稿解析</a>
+                <a href="index.html">图片生成</a>
+                <a href="history.html">历史记录</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="container">
+        <div class="generator-layout">
+            <!-- 左侧：上传区 -->
+            <div class="config-panel">
+                <h2>上传设计稿</h2>
+
+                <!-- 上传区域 -->
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    <div class="upload-content">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p>点击或拖拽上传设计稿</p>
+                        <small>支持 JPG、PNG 格式，最大 10MB</small>
+                    </div>
+                </div>
+
+                <!-- 预览 -->
+                <div id="previewSection" style="display: none;">
+                    <h3>图片预览</h3>
+                    <img id="preview" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+                    <button class="btn btn-danger btn-small" onclick="clearUpload()">清除</button>
+                </div>
+
+                <!-- 配置选项 -->
+                <div class="config-section">
+                    <h3>识别引擎</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enableAI" checked>
+                        <span>AI 识别 (Claude 3.5 Sonnet)</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enableOCR">
+                        <span>OCR 文字识别 (Tesseract)</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enableCV" checked>
+                        <span>OpenCV 组件检测</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary" id="analyzeBtn" disabled>
+                    <span>🔍 开始解析</span>
+                </button>
+            </div>
+
+            <!-- 右侧：结果区 -->
+            <div class="result-panel">
+                <h2>解析结果</h2>
+
+                <!-- 初始状态 -->
+                <div id="emptyState" class="empty-state">
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p>上传设计稿开始解析</p>
+                </div>
+
+                <!-- 加载中 -->
+                <div id="loadingState" class="loading-state" style="display: none;">
+                    <div class="loader"></div>
+                    <p>AI 正在分析设计稿...</p>
+                </div>
+
+                <!-- 结果展示 -->
+                <div id="resultContent" style="display: none;">
+                    <!-- 统计信息 -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="textCount">0</div>
+                            <div class="stat-label">文字组件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="buttonCount">0</div>
+                            <div class="stat-label">按钮组件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="imageCount">0</div>
+                            <div class="stat-label">图片组件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="processTime">0</div>
+                            <div class="stat-label">处理时间(ms)</div>
+                        </div>
+                    </div>
+
+                    <!-- HTML 预览 -->
+                    <div class="html-preview-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3>HTML 预览</h3>
+                            <button class="btn btn-secondary btn-small" onclick="previewHTML()">🔄 刷新预览</button>
+                        </div>
+                        <div class="html-preview">
+                            <iframe id="htmlPreview" frameborder="0"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- JSON 预览 -->
+                    <div class="json-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3>JSON 模板</h3>
+                            <button class="btn btn-secondary btn-small" onclick="copyJSON()">📋 复制</button>
+                        </div>
+                        <pre id="jsonPreview"></pre>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="exportHTML()">📥 导出 HTML</button>
+                        <button class="btn btn-primary" onclick="copyJSON()">📋 复制 JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="analyze.js"></script>
+</body>
+</html>

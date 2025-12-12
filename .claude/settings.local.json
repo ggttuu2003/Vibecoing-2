@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn clean compile:*)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(./mvnw clean compile:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "historyId" : "31a773b0-36a1-4556-8301-cba135354151",
+  "timestamp" : "2025-12-12 14:28:21",
+  "request" : {
+    "title" : "如何提升聊天技巧",
+    "subtitle" : "提升AI能力",
+    "keywords" : [ "设计" ],
+    "style" : "xiaohongshu",
+    "count" : 1,
+    "model" : "google/gemini-3-pro-image-preview"
+  },
+  "metadata" : {
+    "generationTimeMs" : 26959,
+    "count" : 1
+  },
+  "imagePaths" : [ "images/31a773b0-36a1-4556-8301-cba135354151/image_1.png" ],
+  "style" : "xiaohongshu",
+  "model" : "google/gemini-3-pro-image-preview",
+  "imageCount" : 1
+}

@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "Vibecoing API - 图片分析",
+    "description": "测试 Vibecoing 图片分析 API，支持 AI、OCR、CV 三种分析方式",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "图片分析 - 完整功能",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "上传的图片文件（支持 jpg, jpeg, png, bmp）"
+            },
+            {
+              "key": "enableAI",
+              "value": "true",
+              "type": "text",
+              "description": "是否启用 AI 分析（默认 true）"
+            },
+            {
+              "key": "enableOCR",
+              "value": "true",
+              "type": "text",
+              "description": "是否启用 OCR 识别（默认 true）"
+            },
+            {
+              "key": "enableCV",
+              "value": "true",
+              "type": "text",
+              "description": "是否启用计算机视觉分析（默认 true）"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "analyze"
+          ]
+        },
+        "description": "上传图片进行完整分析，包括 AI、OCR、CV 三种方式"
+      },
+      "response": []
+    },
+    {
+      "name": "图片分析 - 仅 AI",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "上传的图片文件"
+            },
+            {
+              "key": "enableAI",
+              "value": "true",
+              "type": "text"
+            },
+            {
+              "key": "enableOCR",
+              "value": "false",
+              "type": "text"
+            },
+            {
+              "key": "enableCV",
+              "value": "false",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/analyze?enableAI=true&enableOCR=false&enableCV=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "analyze"
+          ],
+          "query": [
+            {
+              "key": "enableAI",
+              "value": "true"
+            },
+            {
+              "key": "enableOCR",
+              "value": "false"
+            },
+            {
+              "key": "enableCV",
+              "value": "false"
+            }
+          ]
+        },
+        "description": "仅使用 AI 进行图片分析"
+      },
+      "response": []
+    },
+    {
+      "name": "图片分析 - 仅 OCR",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "enableAI",
+              "value": "false",
+              "type": "text"
+            },
+            {
+              "key": "enableOCR",
+              "value": "true",
+              "type": "text"
+            },
+            {
+              "key": "enableCV",
+              "value": "false",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/analyze?enableAI=false&enableOCR=true&enableCV=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "analyze"
+          ],
+          "query": [
+            {
+              "key": "enableAI",
+              "value": "false"
+            },
+            {
+              "key": "enableOCR",
+              "value": "true"
+            },
+            {
+              "key": "enableCV",
+              "value": "false"
+            }
+          ]
+        },
+        "description": "仅使用 OCR 进行文字识别"
+      },
+      "response": []
+    },
+    {
+      "name": "健康检查",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": "检查服务是否正常运行"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    }
+  ]
+}
