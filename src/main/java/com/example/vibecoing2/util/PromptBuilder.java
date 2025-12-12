@@ -17,6 +17,7 @@ public class PromptBuilder {
 
     private static final String XIAOHONGSHU_TEMPLATE_PATH = "/prompts/xiaohongshu-template.txt";
     private static final String ADVERTISING_TEMPLATE_PATH = "/prompts/advertising-template.txt";
+    private static final String TEMPLATE_OVERLAY_PATH = "/prompts/template-overlay.txt";
 
     private static final String PLACEHOLDER_TITLE = "{title}";
     private static final String PLACEHOLDER_SUBTITLE = "{subtitle}";
@@ -169,7 +170,21 @@ public class PromptBuilder {
     }
 
     /**
-     * 根据风格类型构建 prompt
+     * 构建模板图片叠加文字的 prompt
+     *
+     * @param title    主标题
+     * @param subtitle 副标题
+     * @param keywords 关键词列表
+     * @return 生成的 prompt
+     */
+    public static String buildTemplateOverlayPrompt(String title, String subtitle, List<String> keywords) {
+        String template = loadTemplate(TEMPLATE_OVERLAY_PATH);
+        // 模板叠加不需要区分风格，统一格式化关键词
+        return replaceVariables(template, title, subtitle, keywords, "xiaohongshu");
+    }
+
+    /**
+     * 根据风格类型构建 prompt（无模板图）
      *
      * @param style    风格类型 (xiaohongshu 或 advertising_a)
      * @param title    主标题
@@ -178,10 +193,31 @@ public class PromptBuilder {
      * @return 生成的 prompt
      */
     public static String buildPrompt(String style, String title, String subtitle, List<String> keywords) {
+        return buildPrompt(style, title, subtitle, keywords, false);
+    }
+
+    /**
+     * 根据风格类型和是否有模板构建 prompt
+     *
+     * @param style       风格类型 (xiaohongshu 或 advertising_a)
+     * @param title       主标题
+     * @param subtitle    副标题
+     * @param keywords    关键词列表
+     * @param hasTemplate 是否有模板图片
+     * @return 生成的 prompt
+     */
+    public static String buildPrompt(String style, String title, String subtitle,
+                                    List<String> keywords, boolean hasTemplate) {
         if (style == null || style.trim().isEmpty()) {
             throw new IllegalArgumentException("风格类型不能为空");
         }
 
+        // 如果有模板图，使用模板叠加 prompt
+        if (hasTemplate) {
+            return buildTemplateOverlayPrompt(title, subtitle, keywords);
+        }
+
+        // 否则根据风格选择对应的 prompt
         switch (style.toLowerCase()) {
             case "xiaohongshu":
                 return buildXiaohongshuPrompt(title, subtitle, keywords);

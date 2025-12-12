@@ -42,7 +42,7 @@ public class AIImageGenerationService {
     }
 
     /**
-     * 生成图片
+     * 生成图片（无模板）
      *
      * @param prompt 提示词
      * @param model  模型名称
@@ -50,6 +50,19 @@ public class AIImageGenerationService {
      * @throws IOException 如果生成失败
      */
     public String generateImage(String prompt, String model) throws IOException {
+        return generateImage(prompt, model, null);
+    }
+
+    /**
+     * 生成图片（支持模板图）
+     *
+     * @param prompt 提示词
+     * @param model  模型名称
+     * @param templateImageDataUrl 模板图片的 data URL（如：data:image/png;base64,xxx），可为 null
+     * @return Base64 编码的图片数据（不含 data:image/png;base64, 前缀）
+     * @throws IOException 如果生成失败
+     */
+    public String generateImage(String prompt, String model, String templateImageDataUrl) throws IOException {
         // 验证参数
         if (prompt == null || prompt.trim().isEmpty()) {
             throw new IllegalArgumentException("Prompt 不能为空");
@@ -63,13 +76,25 @@ public class AIImageGenerationService {
             throw new IllegalArgumentException("不支持的模型: " + actualModel);
         }
 
-        log.info("开始生成图片: model={}, promptLength={}", actualModel, prompt.length());
+        boolean hasTemplate = templateImageDataUrl != null && !templateImageDataUrl.trim().isEmpty();
+        log.info("开始生成图片: model={}, promptLength={}, hasTemplate={}",
+                actualModel, prompt.length(), hasTemplate);
 
         // 构建请求
-        AIImageGenRequest request = AIImageGenRequest.createImageRequest(prompt);
-        String requestJson = objectMapper.writeValueAsString(request);
+        AIImageGenRequest request;
+        if (hasTemplate) {
+            // 从 data URL 中提取 MIME 类型和纯 base64 数据
+            String mimeType = extractMimeType(templateImageDataUrl);
+            String pureBase64 = extractBase64Data(templateImageDataUrl);
 
-        log.debug("API 请求: {}", requestJson);
+            request = AIImageGenRequest.createImageRequestWithTemplate(prompt, pureBase64, mimeType);
+            log.info("使用模板图生成，MIME类型: {}, base64长度: {}", mimeType, pureBase64.length());
+        } else {
+            request = AIImageGenRequest.createImageRequest(prompt);
+        }
+
+        String requestJson = objectMapper.writeValueAsString(request);
+        log.debug("API 请求: {}", requestJson.length() > 500 ? requestJson.substring(0, 500) + "..." : requestJson);
 
         // 发送请求
         String imageData = sendRequestWithRetry(requestJson, actualModel, config.getMaxRetries());
@@ -178,5 +203,49 @@ public class AIImageGenerationService {
         }
         // 添加前缀
         return "data:image/png;base64," + base64Data;
+    }
+
+    /**
+     * 从 data URL 中提取 MIME 类型
+     *
+     * @param dataUrl data URL（如：data:image/png;base64,xxx）
+     * @return MIME 类型（如：image/png）
+     */
+    private String extractMimeType(String dataUrl) {
+        if (dataUrl == null || !dataUrl.startsWith("data:")) {
+            return "image/png"; // 默认值
+        }
+
+        int semicolonIndex = dataUrl.indexOf(';');
+        if (semicolonIndex > 5) {
+            return dataUrl.substring(5, semicolonIndex);
+        }
+
+        return "image/png"; // 默认值
+    }
+
+    /**
+     * 从 data URL 中提取纯 base64 数据
+     *
+     * @param dataUrl data URL（如：data:image/png;base64,xxx）
+     * @return 纯 base64 数据（不含前缀）
+     */
+    private String extractBase64Data(String dataUrl) {
+        if (dataUrl == null) {
+            return "";
+        }
+
+        // 如果已经是纯 base64，直接返回
+        if (!dataUrl.startsWith("data:")) {
+            return dataUrl;
+        }
+
+        // 查找 base64, 之后的内容
+        int commaIndex = dataUrl.indexOf(',');
+        if (commaIndex > 0 && commaIndex < dataUrl.length() - 1) {
+            return dataUrl.substring(commaIndex + 1);
+        }
+
+        return dataUrl;
     }
 }

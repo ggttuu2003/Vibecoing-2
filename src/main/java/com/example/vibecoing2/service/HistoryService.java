@@ -108,7 +108,8 @@ public class HistoryService {
                     imagePaths,
                     request.getStyle(),
                     request.getModel(),
-                    response.getImages().size()
+                    response.getImages().size(),
+                    null  // images 字段在保存时为 null，查询时会动态加载
             );
 
             // 保存 JSON 元数据
@@ -284,13 +285,71 @@ public class HistoryService {
      */
     private HistoryRecord readHistoryRecord(Path path) {
         try {
-            return objectMapper.readValue(path.toFile(), HistoryRecord.class);
+            HistoryRecord record = objectMapper.readValue(path.toFile(), HistoryRecord.class);
+
+            // 加载图片数据（转换为 base64）
+            if (record != null) {
+                loadImagesForRecord(record);
+            }
+
+            return record;
         } catch (com.fasterxml.jackson.core.io.JsonEOFException e) {
             log.warn("历史记录文件损坏（已跳过）: {}", path);
             return null;
         } catch (Exception e) {
             log.error("读取历史记录文件失败: {}", path, e);
             return null;
+        }
+    }
+
+    /**
+     * 为历史记录加载图片数据
+     *
+     * @param record 历史记录
+     */
+    private void loadImagesForRecord(HistoryRecord record) {
+        try {
+            if (record.getImagePaths() == null || record.getImagePaths().isEmpty()) {
+                return;
+            }
+
+            List<HistoryRecord.ImageData> images = new ArrayList<>();
+
+            for (String relativePath : record.getImagePaths()) {
+                try {
+                    // 构建完整路径
+                    Path imagePath = Paths.get(HISTORY_BASE_DIR, relativePath);
+
+                    if (Files.exists(imagePath)) {
+                        // 读取图片文件并转换为 base64
+                        byte[] imageBytes = Files.readAllBytes(imagePath);
+                        String base64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
+
+                        // 从 request 中获取尺寸信息
+                        int width = 1080;
+                        int height = 1080;
+                        if (record.getStyle() != null && "xiaohongshu".equals(record.getStyle())) {
+                            height = 1350;
+                        }
+
+                        images.add(new HistoryRecord.ImageData(
+                                base64,
+                                width,
+                                height,
+                                record.getStyle()
+                        ));
+                    } else {
+                        log.warn("图片文件不存在: {}", imagePath);
+                    }
+                } catch (Exception e) {
+                    log.error("加载图片失败: {}", relativePath, e);
+                }
+            }
+
+            record.setImages(images);
+
+        } catch (Exception e) {
+            log.error("加载历史记录图片失败", e);
         }
     }
 

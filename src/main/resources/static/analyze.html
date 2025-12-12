@@ -21,9 +21,9 @@
 
     <!-- 主内容 -->
     <main class="container">
-        <div class="generator-layout">
-            <!-- 左侧：上传区 -->
-            <div class="config-panel">
+        <div style="display: grid; grid-template-columns: 380px 1fr 380px; gap: 24px; align-items: start; margin-top: 40px;">
+            <!-- 左列：上传区 + 配置 -->
+            <div class="config-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
                 <h2>上传设计稿</h2>
 
                 <!-- 上传区域 -->
@@ -67,9 +67,9 @@
                 </button>
             </div>
 
-            <!-- 右侧：结果区 -->
-            <div class="result-panel">
-                <h2>解析结果</h2>
+            <!-- 中列：预览区 -->
+            <div class="result-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
+                <h2>预览结果</h2>
 
                 <!-- 初始状态 -->
                 <div id="emptyState" class="empty-state">
@@ -111,27 +111,42 @@
                     <div class="html-preview-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <h3>HTML 预览</h3>
-                            <button class="btn btn-secondary btn-small" onclick="previewHTML()">🔄 刷新预览</button>
+                            <button class="btn btn-secondary btn-small" onclick="previewHTML()">🔄 刷新</button>
                         </div>
-                        <div class="html-preview">
-                            <iframe id="htmlPreview" frameborder="0"></iframe>
+                        <div class="html-preview" style="position: relative; width: 100%; height: 600px; overflow: hidden; background: #F8F9FA; border-radius: 8px;">
+                            <iframe id="htmlPreview" frameborder="0" style="border: none; position: absolute; top: 0; left: 0; transform-origin: top left;"></iframe>
                         </div>
-                    </div>
-
-                    <!-- JSON 预览 -->
-                    <div class="json-section">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <h3>JSON 模板</h3>
-                            <button class="btn btn-secondary btn-small" onclick="copyJSON()">📋 复制</button>
-                        </div>
-                        <pre id="jsonPreview"></pre>
                     </div>
 
                     <!-- 操作按钮 -->
-                    <div class="action-buttons">
+                    <div class="action-buttons" style="margin-top: 20px;">
                         <button class="btn btn-success" onclick="exportHTML()">📥 导出 HTML</button>
-                        <button class="btn btn-primary" onclick="copyJSON()">📋 复制 JSON</button>
+                        <button class="btn btn-secondary" onclick="copyJSON()">📋 复制 JSON</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- 右列：历史记录 -->
+            <div class="result-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
+                <h2>解析历史</h2>
+
+                <!-- 加载中 -->
+                <div id="historyLoading" class="loading-state" style="display: none;">
+                    <div class="loader"></div>
+                    <p>加载中...</p>
+                </div>
+
+                <!-- 历史记录列表 -->
+                <div id="historyList" style="display: none;">
+                    <!-- 这里通过 JS 动态生成历史记录 -->
+                </div>
+
+                <!-- 空状态 -->
+                <div id="historyEmpty" class="empty-state">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p>暂无历史记录</p>
                 </div>
             </div>
         </div>

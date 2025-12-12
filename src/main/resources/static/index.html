@@ -21,12 +21,34 @@
 
     <!-- 主内容 -->
     <main class="container">
-        <div class="generator-layout">
-            <!-- 左侧：配置区 -->
-            <div class="config-panel">
+        <div style="display: grid; grid-template-columns: 380px 1fr 380px; gap: 24px; align-items: start; margin-top: 40px;">
+            <!-- 左列：配置区 -->
+            <div class="config-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
                 <h2>配置参数</h2>
 
                 <form id="generateForm">
+                    <!-- 模板图片上传 -->
+                    <div class="form-group">
+                        <label>模板图片（可选）</label>
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="templateImageInput" accept="image/*" style="display: none;">
+                            <div class="upload-content" id="uploadContent">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p>点击或拖拽上传模板图片</p>
+                                <small>如果上传模板，AI 将在图片上添加文字</small>
+                            </div>
+                        </div>
+                        <!-- 预览区域 -->
+                        <div id="previewSection" style="display: none; margin-top: 12px;">
+                            <img id="previewImage" style="width: 100%; border-radius: 8px; margin-bottom: 8px;">
+                            <button type="button" class="btn btn-danger btn-small" id="clearTemplateBtn" style="width: 100%;">
+                                清除模板图片
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>主标题 *</label>
                         <input type="text" id="title" required placeholder="输入主标题">
@@ -86,8 +108,8 @@
                 </form>
             </div>
 
-            <!-- 右侧：结果区 -->
-            <div class="result-panel">
+            <!-- 中列：结果区 -->
+            <div class="result-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
                 <h2>生成结果</h2>
 
                 <!-- 初始状态 -->
@@ -111,6 +133,30 @@
                         <span id="resultTime"></span>
                     </div>
                     <div id="imageGrid" class="image-grid"></div>
+                </div>
+            </div>
+
+            <!-- 右列：历史记录 -->
+            <div class="result-panel" style="height: calc(100vh - 200px); overflow-y: auto;">
+                <h2>生成历史</h2>
+
+                <!-- 加载中 -->
+                <div id="historyLoading" class="loading-state" style="display: none;">
+                    <div class="loader"></div>
+                    <p>加载中...</p>
+                </div>
+
+                <!-- 历史记录列表 - 纯图片网格 -->
+                <div id="historyList" style="display: none;">
+                    <!-- 这里通过 JS 动态生成历史记录图片 -->
+                </div>
+
+                <!-- 空状态 -->
+                <div id="historyEmpty" class="empty-state">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p>暂无历史记录</p>
                 </div>
             </div>
         </div>

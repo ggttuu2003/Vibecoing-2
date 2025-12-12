@@ -46,6 +46,29 @@ public class AIImageGenRequest {
     @AllArgsConstructor
     public static class Part {
         private String text;
+
+        @JsonProperty("inlineData")
+        private InlineData inlineData;
+
+        // 便捷构造函数：仅文本
+        public Part(String text) {
+            this.text = text;
+        }
+
+        // 便捷构造函数：仅图片
+        public Part(InlineData inlineData) {
+            this.inlineData = inlineData;
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class InlineData {
+        @JsonProperty("mimeType")
+        private String mimeType;
+
+        private String data;
     }
 
     @Data
@@ -65,6 +88,27 @@ public class AIImageGenRequest {
     public static AIImageGenRequest createImageRequest(String prompt) {
         Part part = new Part(prompt);
         Content content = new Content("user", List.of(part));
+        GenerationConfig config = new GenerationConfig(List.of("TEXT", "IMAGE"));
+        return new AIImageGenRequest(List.of(content), config);
+    }
+
+    /**
+     * 创建带模板图片的图像生成请求
+     *
+     * @param prompt 提示词
+     * @param templateImageBase64 模板图片的 base64 数据（纯 base64，不含前缀）
+     * @param mimeType 图片 MIME 类型（如 image/png、image/jpeg）
+     * @return 请求对象
+     */
+    public static AIImageGenRequest createImageRequestWithTemplate(String prompt,
+                                                                     String templateImageBase64,
+                                                                     String mimeType) {
+        InlineData imageData = new InlineData(mimeType, templateImageBase64);
+        Part imagePart = new Part(imageData);
+        Part textPart = new Part(prompt);
+
+        // 先传图片，后传文本
+        Content content = new Content("user", List.of(imagePart, textPart));
         GenerationConfig config = new GenerationConfig(List.of("TEXT", "IMAGE"));
         return new AIImageGenRequest(List.of(content), config);
     }

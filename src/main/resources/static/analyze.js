@@ -10,6 +10,7 @@ const resultContent = document.getElementById('resultContent');
 
 let currentFile = null;
 let currentResult = null;
+let uploadedImageBase64 = null; // 保存上传图片的 base64，用于预览背景
 
 // 上传区域点击
 uploadArea.addEventListener('click', () => {
@@ -65,7 +66,8 @@ function handleFile(file) {
     // 显示预览
     const reader = new FileReader();
     reader.onload = (e) => {
-        preview.src = e.target.result;
+        uploadedImageBase64 = e.target.result; // 保存 base64 用于预览背景
+        preview.src = uploadedImageBase64;
         previewSection.style.display = 'block';
         uploadArea.style.display = 'none';
         analyzeBtn.disabled = false;
@@ -76,6 +78,7 @@ function handleFile(file) {
 // 清除上传
 function clearUpload() {
     currentFile = null;
+    uploadedImageBase64 = null;
     fileInput.value = '';
     previewSection.style.display = 'none';
     uploadArea.style.display = 'block';
@@ -157,6 +160,11 @@ function displayResult(data) {
 
     // 自动预览 HTML
     previewHTML();
+
+    // 刷新历史记录（如果是新解析的结果）
+    if (data.id) {
+        loadHistory();
+    }
 }
 
 // 复制 JSON
@@ -188,6 +196,30 @@ function previewHTML() {
     iframeDoc.open();
     iframeDoc.write(htmlContent);
     iframeDoc.close();
+
+    // 计算缩放比例，使iframe内容完整显示在容器中（无滚动条）
+    const template = currentResult.template;
+    const pageWidth = template.page?.width || 750;
+    const pageHeight = template.page?.height || 1334;
+
+    // 容器尺寸（600px 高度）
+    const containerHeight = 600;
+    const containerWidth = iframe.parentElement.clientWidth;
+
+    // 计算缩放比例（按高度和宽度取最小值，确保完整显示）
+    const scaleByHeight = containerHeight / pageHeight;
+    const scaleByWidth = containerWidth / pageWidth;
+    const scale = Math.min(scaleByHeight, scaleByWidth, 1); // 最大不超过1
+
+    // 设置iframe尺寸和缩放
+    iframe.style.width = pageWidth + 'px';
+    iframe.style.height = pageHeight + 'px';
+    iframe.style.transform = `scale(${scale})`;
+
+    // 居中显示
+    const scaledWidth = pageWidth * scale;
+    const scaledHeight = pageHeight * scale;
+    iframe.style.left = ((containerWidth - scaledWidth) / 2) + 'px';
 }
 
 // 生成 HTML 内容（供预览和导出复用）
@@ -209,6 +241,14 @@ function generateHTMLContent() {
     sortedComponents.forEach(comp => {
         componentsHTML += generateComponentHTML(comp);
     });
+
+    // 背景图片样式（使用上传的原图）
+    const backgroundStyle = uploadedImageBase64
+        ? `background-image: url('${uploadedImageBase64}');
+           background-size: cover;
+           background-position: center;
+           background-repeat: no-repeat;`
+        : 'background: #F8F9FA;';
 
     // 生成完整的 HTML
     return `<!DOCTYPE html>
@@ -238,7 +278,7 @@ function generateHTMLContent() {
             position: relative;
             width: ${pageWidth}px;
             height: ${pageHeight}px;
-            background: #F8F9FA;
+            ${backgroundStyle}
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
@@ -421,4 +461,175 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
+}
+
+// ==================== 历史记录功能 ====================
+
+// 页面加载时获取历史记录
+window.addEventListener('DOMContentLoaded', () => {
+    loadHistory();
+});
+
+// 加载历史记录
+async function loadHistory() {
+    const historyLoading = document.getElementById('historyLoading');
+    const historyList = document.getElementById('historyList');
+    const historyEmpty = document.getElementById('historyEmpty');
+
+    historyLoading.style.display = 'block';
+    historyList.style.display = 'none';
+    historyEmpty.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/history/analysis/list?page=1&size=10');
+        const result = await response.json();
+
+        if (result.code === 200 && result.data.records && result.data.records.length > 0) {
+            renderHistory(result.data.records);
+            historyList.style.display = 'block';
+        } else {
+            historyEmpty.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('加载历史记录失败:', error);
+        historyEmpty.style.display = 'block';
+    } finally {
+        historyLoading.style.display = 'none';
+    }
+}
+
+// 渲染历史记录列表
+function renderHistory(records) {
+    const historyList = document.getElementById('historyList');
+
+    historyList.innerHTML = records.map((record, index) => `
+        <div style="background: #F8F9FA; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #E8ECEF;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div>
+                    <div style="font-weight: 600; color: #2C3E50; margin-bottom: 4px;">记录 #${records.length - index}</div>
+                    <div style="font-size: 12px; color: #7F8C8D;">${formatDate(record.timestamp)}</div>
+                </div>
+                <button
+                    class="btn btn-danger btn-small"
+                    onclick="deleteHistory('${record.id}')"
+                    style="padding: 6px 12px; font-size: 12px;"
+                >
+                    删除
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; font-size: 12px;">
+                <div style="text-align: center; padding: 8px; background: #E3F2FD; border-radius: 6px; color: #1976D2;">
+                    <div style="font-weight: 600;">${record.textCount || 0}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">文字</div>
+                </div>
+                <div style="text-align: center; padding: 8px; background: #E8F5E9; border-radius: 6px; color: #388E3C;">
+                    <div style="font-weight: 600;">${record.buttonCount || 0}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">按钮</div>
+                </div>
+                <div style="text-align: center; padding: 8px; background: #F3E5F5; border-radius: 6px; color: #7B1FA2;">
+                    <div style="font-weight: 600;">${record.imageCount || 0}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">图片</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button
+                    class="btn btn-secondary btn-small"
+                    onclick="viewHistory('${record.id}')"
+                    style="flex: 1; padding: 8px; font-size: 12px;"
+                >
+                    查看
+                </button>
+                <button
+                    class="btn btn-success btn-small"
+                    onclick="exportHistoryHTML('${record.id}')"
+                    style="flex: 1; padding: 8px; font-size: 12px;"
+                >
+                    导出
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 格式化日期
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+
+    return date.toLocaleDateString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// 查看历史记录
+async function viewHistory(historyId) {
+    try {
+        const response = await fetch(`/api/history/analysis/${historyId}`);
+        const result = await response.json();
+
+        if (result.code === 200) {
+            currentResult = result.data;
+            displayResult(result.data);
+            showToast('✅ 已加载历史记录', 'success');
+        } else {
+            showToast('❌ 加载失败', 'error');
+        }
+    } catch (error) {
+        console.error('加载历史记录失败:', error);
+        showToast('❌ 加载失败', 'error');
+    }
+}
+
+// 导出历史记录的 HTML
+async function exportHistoryHTML(historyId) {
+    try {
+        const response = await fetch(`/api/history/analysis/${historyId}`);
+        const result = await response.json();
+
+        if (result.code === 200) {
+            const tempResult = currentResult;
+            currentResult = result.data;
+            exportHTML();
+            currentResult = tempResult;
+        } else {
+            showToast('❌ 导出失败', 'error');
+        }
+    } catch (error) {
+        console.error('导出失败:', error);
+        showToast('❌ 导出失败', 'error');
+    }
+}
+
+// 删除历史记录
+async function deleteHistory(historyId) {
+    if (!confirm('确定要删除这条历史记录吗？')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/history/analysis/${historyId}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+
+        if (result.code === 200) {
+            showToast('✅ 删除成功', 'success');
+            loadHistory(); // 重新加载历史记录
+        } else {
+            showToast('❌ 删除失败: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('删除失败:', error);
+        showToast('❌ 删除失败', 'error');
+    }
 }

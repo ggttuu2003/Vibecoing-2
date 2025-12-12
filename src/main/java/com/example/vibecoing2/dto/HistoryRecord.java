@@ -1,6 +1,7 @@
 package com.example.vibecoing2.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HistoryRecord {
     /**
      * 历史记录唯一标识（UUID）
@@ -56,4 +58,43 @@ public class HistoryRecord {
      * 生成的图片数量
      */
     private Integer imageCount;
+
+    /**
+     * 图片数据列表（用于前端展示，包含 base64 数据）
+     */
+    private List<ImageData> images;
+
+    /**
+     * 便捷属性：标题（从 request 中提取）
+     */
+    public String getTitle() {
+        return request != null ? request.getTitle() : null;
+    }
+
+    /**
+     * 便捷属性：副标题（从 request 中提取）
+     */
+    public String getSubtitle() {
+        return request != null ? request.getSubtitle() : null;
+    }
+
+    /**
+     * 便捷属性：图片数量（兼容）
+     */
+    public Integer getCount() {
+        return imageCount;
+    }
+
+    /**
+     * 图片数据
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ImageData {
+        private String base64;
+        private Integer width;
+        private Integer height;
+        private String template;
+    }
 }

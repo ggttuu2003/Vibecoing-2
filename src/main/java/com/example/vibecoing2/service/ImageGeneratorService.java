@@ -31,31 +31,38 @@ public class ImageGeneratorService {
             // 1. 验证请求参数
             validateRequest(request);
 
-            // 2. 构建 AI Prompt
+            // 2. 判断是否有模板图
+            boolean hasTemplate = request.getBackgroundImage() != null
+                    && !request.getBackgroundImage().trim().isEmpty();
+
+            // 3. 构建 AI Prompt（根据是否有模板选择不同的 prompt 策略）
             String prompt = PromptBuilder.buildPrompt(
                     request.getStyle(),
                     request.getTitle(),
                     request.getSubtitle(),
-                    request.getKeywords()
+                    request.getKeywords(),
+                    hasTemplate
             );
 
-            // 如果有背景图，在 prompt 中说明
-            if (request.getBackgroundImage() != null && !request.getBackgroundImage().isEmpty()) {
-                prompt += "\n\n重要提示：用户提供了背景图作为底片，请在此基础上进行创作，保留背景的主要元素和风格。";
-                log.info("检测到背景图片，已添加到 prompt 中");
+            log.info("生成的 Prompt: {}", prompt);
+            if (hasTemplate) {
+                log.info("检测到模板图片，使用模板叠加模式");
             }
 
-            log.info("生成的 Prompt: {}", prompt);
-
-            // 3. 确定生成数量
+            // 4. 确定生成数量
             int count = Math.min(Math.max(request.getCount() != null ? request.getCount() : 1, 1), 3);
 
-            // 4. 使用 AI 生成图片
+            // 5. 使用 AI 生成图片
             List<GenerateImageResponse.GeneratedImage> images = new ArrayList<>();
             for (int i = 1; i <= count; i++) {
                 try {
-                    // 调用 AI 服务生成图片（返回不含前缀的 base64 数据）
-                    String base64Data = aiImageGenerationService.generateImage(prompt, request.getModel());
+                    // 调用 AI 服务生成图片
+                    // 如果有模板图，传入模板图；否则传入 null
+                    String base64Data = aiImageGenerationService.generateImage(
+                            prompt,
+                            request.getModel(),
+                            hasTemplate ? request.getBackgroundImage() : null
+                    );
 
                     // 转换为完整的 data URL（用于保存历史记录）
                     String dataUrl = aiImageGenerationService.toDataUrl(base64Data);
@@ -78,7 +85,7 @@ public class ImageGeneratorService {
                 }
             }
 
-            // 5. 构建响应
+            // 6. 构建响应
             long generationTime = System.currentTimeMillis() - startTime;
             GenerateImageResponse.Metadata metadata = new GenerateImageResponse.Metadata(
                     generationTime,
